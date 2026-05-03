@@ -6,6 +6,8 @@ import AvatarWithBadge from "../avatar-with-badge";
 import { formatChatTime } from "@/lib/helper";
 import { Button } from "../ui/button";
 import { ReplyIcon } from "lucide-react";
+import { Response } from "../ui/ai-response";
+import { RiCircleFill } from "@remixicon/react";
 
 interface Props {
   message: MessageType;
@@ -98,6 +100,13 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
             )}
 
             {message.content && <p>{message.content}</p>}
+
+            <Response>{message.content ?? undefined}</Response>
+            {message.streaming && (
+              <span>
+                <RiCircleFill className="w-4 h-4 animate-bounce rounded-full dark:text-white mt-1" />
+              </span>
+            )}
           </div>
 
           {/* {Reply Icon Button} */}

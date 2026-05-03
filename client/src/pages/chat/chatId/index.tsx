@@ -71,6 +71,7 @@ const SingleChat = () => {
       <ChatFooter
         replyTo={replyTo}
         chatId={chatId}
+        isAIChat={chat.isAiChat}
         currentUserId={currentUserId}
         onCancelReply={() => setReplyTo(null)}
       />

@@ -1,12 +1,12 @@
 import { z } from "zod";
 import type { MessageType } from "@/types/chat.type";
-import { useRef, useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Paperclip, Send, X } from "lucide-react";
-import { Form, FormField, FormItem } from "../ui/form";
+import { Form, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "../ui/input";
 import ChatReplyBar from "./chat-reply-bar";
 import { useChat } from "@/hooks/use-chat";
@@ -15,12 +15,15 @@ interface Props {
   chatId: string | null;
   currentUserId: string | null;
   replyTo: MessageType | null;
+  isAIChat: boolean;
   onCancelReply: () => void;
 }
+
 const ChatFooter = ({
   chatId,
   currentUserId,
   replyTo,
+  isAIChat,
   onCancelReply,
 }: Props) => {
   const messageSchema = z.object({
@@ -39,9 +42,10 @@ const ChatFooter = ({
     },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
@@ -59,36 +63,38 @@ const ChatFooter = ({
 
   const onSubmit = (values: { message?: string }) => {
     if (isSendingMsg) return;
+
     if (!values.message?.trim() && !image) {
       toast.error("Please enter a message or select an image");
       return;
     }
+
     const payload = {
-      chatId,
-      content: values.message,
-      image: image || undefined,
-      replyTo: replyTo,
+      chatId: chatId!, // ✅ fix: ensure non-null
+      content: values.message ?? undefined, // ✅ fix null/undefined
+      image: image ?? undefined,
+      replyTo: replyTo ?? undefined,
     };
-    //Send Message
-    sendMessage(payload);
+
+    sendMessage(payload, isAIChat);
 
     onCancelReply();
     handleRemoveImage();
     form.reset();
   };
+
   return (
     <>
       <div
         className="sticky bottom-0
        inset-x-0 z-[999]
-       bg-card border-t border-border py-4
-      "
+       bg-card border-t border-border py-4"
       >
         {image && !isSendingMsg && (
           <div className="max-w-6xl mx-auto px-8.5">
             <div className="relative w-fit">
               <img
-                src={image}
+                src={image ?? undefined} // ✅ fix
                 className="object-contain h-16 bg-muted min-w-16"
               />
 
@@ -96,10 +102,10 @@ const ChatFooter = ({
                 type="button"
                 variant="ghost"
                 size="icon"
+                disabled={isSendingMsg}
                 className="absolute top-px right-1
                  bg-black/50 text-white rounded-full
-                 cursor-pointer
-                "
+                 cursor-pointer"
                 onClick={handleRemoveImage}
               >
                 <X className="h-3 w-3" />
@@ -107,12 +113,12 @@ const ChatFooter = ({
             </div>
           </div>
         )}
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="max-w-6xl px-8.5 mx-auto
-            flex items-end gap-2
-            "
+            flex items-end gap-2"
           >
             <div className="flex items-center gap-1.5">
               <Button
@@ -125,6 +131,7 @@ const ChatFooter = ({
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
+
               <input
                 type="file"
                 className="hidden"
@@ -134,6 +141,7 @@ const ChatFooter = ({
                 onChange={handleImageChange}
               />
             </div>
+
             <FormField
               control={form.control}
               name="message"

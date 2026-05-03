@@ -91,7 +91,6 @@ export const sendMessageService = async (
     userMessage: newMessage,
     aiResponse,
     chat,
-    isAiChat: chat.isAiChat,
   };
 
   async function getAIResponse(chatId: string, userId: string) {
