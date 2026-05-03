@@ -7,13 +7,14 @@ import http from "http";
 import passport from "passport";
 import { Env } from "./config/env.config";
 import { HTTPSTATUS } from "./config/http.config";
-import { errorHandler } from "./middlewares/errorHandler.middleware";
+// import { errorHandler } from "./middlewares/errorHandler.middleware";
 import routes from "./routes";
 
 import "./config/passport.config";
 import { asyncHandler } from "./middlewares/asyncHandler.middlware";
 import connectDatabase from "./config/database.config";
 import { initializeSocket } from "./lib/socket";
+import { errorHandler } from "./middlewares/errorHandler.middleware";
 
 const app = express();
 const server = http.createServer(app);
