@@ -99,9 +99,8 @@ const ChatMessageBody = memo(({ message, onReply }: Props) => {
               />
             )}
 
-            {message.content && <p>{message.content}</p>}
-
             <Response>{message.content ?? undefined}</Response>
+
             {message.streaming && (
               <span>
                 <RiCircleFill className="w-4 h-4 animate-bounce rounded-full dark:text-white mt-1" />

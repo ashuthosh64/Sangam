@@ -209,17 +209,21 @@ export const useChat = create<ChatState>()((set, get) => ({
   },
 
   addNewMessage: (chatId: string, message: MessageType) => {
-    const chat = get().singleChat;
+  const chat = get().singleChat;
 
-    if (chat?.chat._id === chatId) {
-      set({
-        singleChat: {
-          chat: chat.chat,
-          messages: [...chat.messages, message],
-        },
-      });
+  if (chat?.chat._id === chatId) {
+    if (chat.messages.some((m) => m._id === message._id)) {
+      return;
     }
-  },
+
+    set({
+      singleChat: {
+        chat: chat.chat,
+        messages: [...chat.messages, message],
+      },
+    });
+  }
+},
 
   addOrUpdateMessage: (chatId: string, msg: MessageType, tempId?: string) => {
     const singleChat = get().singleChat;

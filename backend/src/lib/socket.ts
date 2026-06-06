@@ -22,25 +22,52 @@ export const initializeSocket = (httpServer: HTTPServer) => {
   });
 
   io.use(async (socket: AuthenticatedSocket, next) => {
-    try {
-      const rawCookie = socket.handshake.headers.cookie;
+  try {
+    const rawCookie = socket.handshake.headers.cookie;
 
-      if (!rawCookie) return next(new Error("Unauthorized"));
+    console.log("================================");
+    console.log("Raw Cookie:", rawCookie);
 
-      const token = rawCookie?.split("=")?.[1]?.trim();
-      if (!token) return next(new Error("Unauthorized"));
-
-      const decodedToken = jwt.verify(token, Env.JWT_SECRET) as {
-        userId: string;
-      };
-      if (!decodedToken) return next(new Error("Unauthorized"));
-
-      socket.userId = decodedToken.userId;
-      next();
-    } catch (error) {
-      next(new Error("Internal server error"));
+    if (!rawCookie) {
+      console.log("NO COOKIE RECEIVED");
+      return next(new Error("Unauthorized"));
     }
-  });
+
+    const token =
+      rawCookie
+        .split(";")
+        .find((cookie) => cookie.trim().startsWith("token="))
+        ?.split("=")[1] ||
+      rawCookie
+        .split(";")
+        .find((cookie) => cookie.trim().startsWith("accessToken="))
+        ?.split("=")[1] ||
+      rawCookie
+        .split(";")
+        .find((cookie) => cookie.trim().startsWith("jwt="))
+        ?.split("=")[1];
+
+    console.log("Token Found:", !!token);
+
+    if (!token) {
+      console.log("TOKEN NOT FOUND");
+      return next(new Error("Unauthorized"));
+    }
+
+    const decodedToken = jwt.verify(token, Env.JWT_SECRET) as {
+      userId: string;
+    };
+
+    console.log("Decoded Token:", decodedToken);
+
+    socket.userId = decodedToken.userId;
+
+    next();
+  } catch (error) {
+    console.error("SOCKET AUTH ERROR:", error);
+    next(new Error("Internal server error"));
+  }
+});
 
   io.on("connection", (socket: AuthenticatedSocket) => {
     const userId = socket.userId!;
